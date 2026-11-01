@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -47,7 +46,6 @@ fun SettingsScreen(prefs: Prefs, onBack: () -> Unit) {
             Modifier
                 .fillMaxSize()
                 .padding(pad)
-                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 12.dp)
         ) {
@@ -59,9 +57,6 @@ fun SettingsScreen(prefs: Prefs, onBack: () -> Unit) {
             Spacer(Modifier.height(28.dp))
             SectionLabel(stringResource(R.string.app_theme))
             AppThemePicker(state.appTheme) { key -> prefs.update { it.copy(appTheme = key) } }
-            Spacer(Modifier.height(32.dp))
-            SectionLabel(stringResource(R.string.custom_css))
-            CustomCssEditor(prefs)
             Spacer(Modifier.height(32.dp))
             SectionLabel(stringResource(R.string.about))
             Text(stringResource(R.string.about_text), style = MaterialTheme.typography.bodyMedium)

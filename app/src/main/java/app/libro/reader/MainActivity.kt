@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
         val app = application as LibroApp
         setContent {
             val prefs by app.prefs.state.collectAsState()
-            LibroTheme(prefs.appTheme, prefs.customCss) {
+            LibroTheme(prefs.appTheme) {
                 LibroNav(app)
             }
         }

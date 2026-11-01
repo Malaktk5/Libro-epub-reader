@@ -12,10 +12,8 @@ import java.util.zip.ZipFile
 
 class EpubException(message: String) : Exception(message)
 
-/** One reading-order document of the book. [size] is its uncompressed byte size, used to weight progress. */
 data class SpineItem(val path: String, val size: Long)
 
-/** One table-of-contents row. [spineIndex] is already resolved against the reading order. */
 data class TocEntry(
     val title: String,
     val spineIndex: Int,
@@ -36,10 +34,6 @@ private class Opf {
     val spineRefs = ArrayList<String>()
 }
 
-/**
- * A parsed, opened EPUB. Keeps the zip file open so the reader can stream resources out of it;
- * call [close] when done.
- */
 class EpubBook private constructor(
     private val zip: ZipFile,
     val title: String,
@@ -64,17 +58,14 @@ class EpubBook private constructor(
         }
     }
 
-    /** Bytes of the book that come before the chapter at [index]. */
     fun sizeBefore(index: Int): Long = cumulative.getOrElse(index) { 0L }
 
-    /** Book-level progress (0..1) for a position [fractionInChapter] into chapter [index]. */
     fun overallProgress(index: Int, fractionInChapter: Double): Double {
         val i = index.coerceIn(0, spine.lastIndex)
         val inside = fractionInChapter.coerceIn(0.0, 1.0) * spine[i].size
         return ((cumulative[i] + inside) / totalSize.toDouble()).coerceIn(0.0, 1.0)
     }
 
-    /** Maps a book-level progress (0..1) back to a chapter index and a fraction inside that chapter. */
     fun locate(progress: Double): Pair<Int, Double> {
         val target = progress.coerceIn(0.0, 1.0) * totalSize
         var idx = spine.lastIndex
@@ -208,8 +199,6 @@ class EpubBook private constructor(
             return EpubBook(zip, title, author, language, rtl, spine, toc, cover, entries, lower, mediaTypes)
         }
 
-        // ---------------------------------------------------------------- XML helpers
-
         private fun newParser(stream: InputStream): XmlPullParser {
             val p = Xml.newPullParser()
             try {
@@ -238,8 +227,6 @@ class EpubBook private constructor(
         } catch (e: Exception) {
             ""
         }
-
-        // ---------------------------------------------------------------- container + package
 
         private fun parseContainer(stream: InputStream): String? {
             val p = newParser(stream)
@@ -293,8 +280,6 @@ class EpubBook private constructor(
             return opf
         }
 
-        // ---------------------------------------------------------------- table of contents
-
         private fun parseToc(
             zip: ZipFile,
             entries: Map<String, ZipEntry>,
@@ -318,7 +303,6 @@ class EpubBook private constructor(
                 return out
             }
 
-            // EPUB 3 navigation document first.
             val navItem = opf.manifest.values.firstOrNull { it.props.split(' ').contains("nav") }
             if (navItem != null) {
                 val navPath = resolvePath(opfDir, navItem.href)
@@ -334,7 +318,6 @@ class EpubBook private constructor(
                 }
             }
 
-            // EPUB 2 NCX.
             val ncxItem = opf.tocId?.let { opf.manifest[it] }
                 ?: opf.manifest.values.firstOrNull { it.type == "application/x-dtbncx+xml" }
             if (ncxItem != null) {
@@ -351,7 +334,6 @@ class EpubBook private constructor(
                 }
             }
 
-            // Fallback: one untitled row per spine item (the UI shows "Chapter N").
             return spine.indices.map { TocEntry("", it, null, 0) }
         }
 
@@ -408,8 +390,7 @@ class EpubBook private constructor(
 
         private fun parseNcx(stream: InputStream): List<RawToc> {
             val p = newParser(stream)
-            // navLabel and content come before any nested navPoint, so a point is complete by the time
-            // its children start; adding points when they open keeps document order.
+
             val all = ArrayList<NcxPoint>()
             val open = ArrayList<NcxPoint>()
             var inLabel = false
@@ -441,8 +422,6 @@ class EpubBook private constructor(
             return all.filter { it.src.isNotEmpty() }.map { RawToc(it.label, it.src, it.level) }
         }
 
-        // ---------------------------------------------------------------- cover
-
         private fun findCover(
             zip: ZipFile,
             opf: Opf,
@@ -465,7 +444,6 @@ class EpubBook private constructor(
                 if (exists(p)) return p
             }
 
-            // Last resort: the first image referenced by the first reading-order document.
             try {
                 val first = spine.first().path
                 val e = entries[first] ?: lower[first.lowercase(Locale.ROOT)] ?: return null
@@ -485,15 +463,12 @@ class EpubBook private constructor(
             return null
         }
 
-        // ---------------------------------------------------------------- paths
-
         private fun decodeUrl(s: String): String = try {
             URLDecoder.decode(s.replace("+", "%2B"), "UTF-8")
         } catch (e: Exception) {
             s
         }
 
-        /** Resolves [href] (possibly URL-encoded, possibly with ../) against [baseDir] inside the zip. */
         fun resolvePath(baseDir: String, href: String): String {
             val clean = decodeUrl(href.substringBefore('#').substringBefore('?'))
             val raw = when {

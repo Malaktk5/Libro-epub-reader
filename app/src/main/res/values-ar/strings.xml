@@ -87,22 +87,4 @@
     <string name="about_text">كل شيء يبقى على هاتفك. بدون حساب، بدون إنترنت، بدون تتبّع.</string>
     <string name="fonts_credit">الخطوط: Literata وAtkinson Hyperlegible وأميري وNoto Naskh Arabic (رخصة SIL OFL).</string>
     <string name="preview_sample">نص تجريبي لمعاينة شكل الخط والحجم.</string>
-    <string name="theme_amoled">أسود أموليد</string>
-    <string name="theme_midnight">منتصف الليل</string>
-    <string name="theme_nord">نورد</string>
-    <string name="theme_gruvbox">جروفبوكس</string>
-    <string name="theme_forest">غابة</string>
-    <string name="theme_solar">سولارايزد</string>
-    <string name="theme_solar_light">سولار فاتح</string>
-    <string name="theme_solar_dark">سولار داكن</string>
-    <string name="theme_rose">وردي</string>
-    <string name="theme_lavender">خزامي</string>
-    <string name="reading_defaults">القراءة</string>
-    <string name="custom_css">CSS مخصص</string>
-    <string name="custom_css_on">مفعّل</string>
-    <string name="custom_css_help">اكتب أي CSS لتغيير مظهر صفحات الكتاب. أضف !important (مع البادئة body) لتجاوز قواعد القارئ. كما أن متغيرات الألوان مثل --app-primary أو --page-bg تغيّر ألوان التطبيق نفسه.</string>
-    <string name="custom_css_vars">المتغيرات المتاحة</string>
-    <string name="custom_css_apply">تطبيق</string>
-    <string name="custom_css_clear">مسح</string>
-    <string name="custom_css_example">إدراج مثال</string>
 </resources>

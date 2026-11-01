@@ -87,22 +87,4 @@
     <string name="about_text">Everything stays on your phone. No account, no internet, no tracking.</string>
     <string name="fonts_credit">Fonts: Literata, Atkinson Hyperlegible, Amiri, Noto Naskh Arabic (SIL Open Font License).</string>
     <string name="preview_sample">The quick brown fox jumps over the lazy dog.</string>
-    <string name="theme_amoled">Amoled</string>
-    <string name="theme_midnight">Midnight</string>
-    <string name="theme_nord">Nord</string>
-    <string name="theme_gruvbox">Gruvbox</string>
-    <string name="theme_forest">Forest</string>
-    <string name="theme_solar">Solarized</string>
-    <string name="theme_solar_light">Solar light</string>
-    <string name="theme_solar_dark">Solar dark</string>
-    <string name="theme_rose">Rose</string>
-    <string name="theme_lavender">Lavender</string>
-    <string name="reading_defaults">Reading</string>
-    <string name="custom_css">Custom CSS</string>
-    <string name="custom_css_on">On</string>
-    <string name="custom_css_help">Write any CSS to restyle book pages. Add !important (and a body prefix) to override the reader\'s own rules. Colour variables such as --app-primary or --page-bg also recolour the app itself.</string>
-    <string name="custom_css_vars">Available variables</string>
-    <string name="custom_css_apply">Apply</string>
-    <string name="custom_css_clear">Clear</string>
-    <string name="custom_css_example">Insert example</string>
 </resources>

@@ -39,7 +39,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-/** Decodes a cover thumbnail off the main thread. */
 @Composable
 fun rememberCover(file: File?, targetWidth: Int = 420): Bitmap? {
     val bmp by produceState<Bitmap?>(null, file?.path, file?.lastModified()) {
@@ -63,7 +62,6 @@ private val coverTints = listOf(
     Color(0xFF34506E), Color(0xFF8A3B3B), Color(0xFF4A4E69), Color(0xFF3D6B4F),
 )
 
-/** Book cover, or a typographic placeholder tinted from the title when the EPUB has no cover image. */
 @Composable
 fun BookCover(
     title: String,
@@ -114,7 +112,6 @@ fun BookCover(
     }
 }
 
-/** A selectable card with a check badge, used for language / theme pickers. */
 @Composable
 fun ChoiceCard(
     selected: Boolean,

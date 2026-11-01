@@ -21,15 +21,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import app.libro.reader.ui.CustomCssEditor
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -108,7 +99,7 @@ fun ReaderScreen(app: LibroApp, bookId: String, onClose: () -> Unit) {
 
     val prefs by app.prefs.state.collectAsState()
     val themeInfo = LocalThemeInfo.current
-    val palette = Palettes.forReader(prefs.readerTheme, themeInfo)
+    val palette = Palettes.forReader(prefs.readerTheme, themeInfo.dark, themeInfo.sepia)
 
     val b = book
     if (failed || entry == null) {
@@ -142,7 +133,6 @@ private fun ReaderContent(
     var chrome by remember { mutableStateOf(false) }
     var showToc by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
-    var showCss by remember { mutableStateOf(false) }
     var pos by remember { mutableStateOf(Pos(entry.chapter, 0.0, 0, 1, entry.progress)) }
 
     val chromeState = rememberUpdatedState { chrome = !chrome }
@@ -167,7 +157,6 @@ private fun ReaderContent(
     )
     LaunchedEffect(prefs, palette, labels) { controller.updateStyle(prefs, palette, labels) }
 
-    // Save when the app goes to the background.
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, controller) {
         val obs = LifecycleEventObserver { _, ev -> if (ev == Lifecycle.Event.ON_PAUSE) controller.saveNow() }
@@ -175,7 +164,6 @@ private fun ReaderContent(
         onDispose { lifecycleOwner.lifecycle.removeObserver(obs) }
     }
 
-    // Screen-on and brightness are per-reading-session window flags.
     val view = androidx.compose.ui.platform.LocalView.current
     DisposableEffect(prefs.keepScreenOn) {
         view.keepScreenOn = prefs.keepScreenOn
@@ -217,7 +205,6 @@ private fun ReaderContent(
                 .padding(top = topInset + 4.dp, bottom = bottomInset + 26.dp),
         )
 
-        // Quiet footer: page counter or percentage, always visible.
         Row(
             Modifier
                 .align(Alignment.BottomCenter)
@@ -247,11 +234,7 @@ private fun ReaderContent(
             enter = fadeIn() + slideInVertically { -it / 2 },
             exit = fadeOut() + slideOutVertically { -it / 2 },
         ) {
-            Surface(
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f),
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 4.dp,
-            ) {
+            Surface(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f), shadowElevation = 4.dp) {
                 Row(
                     Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 4.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -287,11 +270,7 @@ private fun ReaderContent(
         ) {
             var dragging by remember { mutableStateOf(false) }
             var dragValue by remember { mutableFloatStateOf(0f) }
-            Surface(
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f),
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                shadowElevation = 8.dp,
-            ) {
+            Surface(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f), shadowElevation = 8.dp) {
                 Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 10.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(
@@ -331,33 +310,9 @@ private fun ReaderContent(
         ModalBottomSheet(
             onDismissRequest = { showSettings = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
-            scrimColor = Color.Transparent, // keep the page visible so changes can be judged live
+            scrimColor = Color.Transparent,
         ) {
-            ReaderSettingsPanel(app.prefs, onEditCss = { showSettings = false; showCss = true })
-        }
-    }
-
-    if (showCss) {
-        Dialog(
-            onDismissRequest = { showCss = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
-        ) {
-            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding()) {
-                    Row(
-                        Modifier.fillMaxWidth().padding(start = 24.dp, end = 8.dp, top = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(stringResource(R.string.custom_css), style = MaterialTheme.typography.titleLarge)
-                        TextButton(onClick = { showCss = false }) { Text(stringResource(R.string.close)) }
-                    }
-                    CustomCssEditor(
-                        app.prefs,
-                        Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 12.dp),
-                    )
-                }
-            }
+            ReaderSettingsPanel(app.prefs)
         }
     }
 }

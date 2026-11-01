@@ -1,13 +1,3 @@
-/*
- * Libro reader runtime. Injected into every chapter by the WebView client.
- *
- * Talks to the app through the LibroBridge object:
- *   settings()  -> JSON with theme, font, size, mode ...
- *   start()     -> JSON {chapter, fraction, anchor, hasPrev, hasNext}
- *   progress(chapter, fraction, display, page, pages)
- *   edge(chapter, forward)      reached the start/end of the chapter
- *   toggleChrome()              user tapped the middle of the page
- */
 (function () {
   'use strict';
   if (window.__lib) { return; }
@@ -24,13 +14,11 @@
   var lastSwipe = 0;
   var scrollTimer = null, resizeTimer = null;
 
-  var VPAD = 22; // vertical padding of a page, px
+  var VPAD = 22;
 
   function scroller() { return document.scrollingElement || doc; }
   function isPaged() { return S.mode === 'paged'; }
   function reveal() { doc.style.setProperty('visibility', 'visible', 'important'); }
-
-  // ------------------------------------------------------------------ fonts
 
   var FONTS = (function () {
     var u = 'https://epub.local/__fonts/';
@@ -52,18 +40,12 @@
     ].join('');
   })();
 
-  // ------------------------------------------------------------------ styling
-
   var TEXT_EL = 'p,li,dd,dt,td,th,blockquote,div,section,article,aside,figcaption,span,a,em,i,b,strong,cite,q,small,sup,sub,label,pre,code,h1,h2,h3,h4,h5,h6';
   var BLOCK_EL = 'p,li,dd,dt,td,th,blockquote,div,section,article,aside,figcaption,pre';
 
   function buildCss(dirValue) {
     var t = S.theme, m = S.margin, paged = isPaged();
     var c = [FONTS];
-
-    // Read-only variables so the user's CSS can reuse the active theme: color: var(--libro-link)
-    c.push(':root{--libro-bg:' + t.bg + ';--libro-fg:' + t.fg + ';--libro-link:' + t.link +
-      ';--libro-size:' + S.size + 'px;--libro-margin:' + m + 'px;}');
 
     c.push('html{-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;' +
       'background:' + t.bg + '!important;color:' + t.fg + '!important;touch-action:manipulation;' +
@@ -96,7 +78,6 @@
     }
     c.push('body{' + body + '}');
 
-    // Colors are always enforced so dark themes stay readable whatever the book's own CSS says.
     c.push(TEXT_EL.split(',').map(function (s) { return 'body ' + s; }).join(',') +
       '{color:inherit!important;background-color:transparent!important;}');
     c.push('body a,body a *{color:' + t.link + '!important;}');
@@ -133,9 +114,6 @@
     c.push('.libro-note{text-align:center!important;opacity:.6;margin:24px 0!important;font:.9rem sans-serif!important;}');
 
     if (dirValue) { c.push('html,body{direction:' + dirValue + '!important;}'); }
-
-    // The user's own stylesheet always comes last so it can override everything above.
-    if (S.css) { c.push(S.css); }
     return c.join('\n');
   }
 
@@ -185,8 +163,6 @@
     }
     document.body.appendChild(footerEl);
   }
-
-  // ------------------------------------------------------------------ layout + position
 
   function recount() {
     var se = scroller();
@@ -256,7 +232,6 @@
       doc.setAttribute('lang', S.lang);
     }
 
-    // First pass without a direction rule, to learn what the book itself wants.
     var st = ensureStyle();
     st.textContent = buildCss(null);
     var dir = document.body ? window.getComputedStyle(document.body).direction : 'ltr';
@@ -273,8 +248,6 @@
     if (!ready) { return; }
     apply(true);
   }
-
-  // ------------------------------------------------------------------ navigation
 
   function nextPage() {
     if (!isPaged()) {
@@ -296,8 +269,6 @@
     else { try { B.edge(chapter, false); } catch (e) { } }
   }
 
-  // ------------------------------------------------------------------ input
-
   function onClick(e) {
     if (Date.now() - lastSwipe < 400) { return; }
     var sel = window.getSelection ? window.getSelection() : null;
@@ -312,7 +283,7 @@
         try { id = decodeURIComponent(id); } catch (err) { }
         goAnchor(id);
       }
-      return; // other links are handled by the WebView client
+      return;
     }
 
     if (!isPaged()) { try { B.toggleChrome(); } catch (err) { } return; }
@@ -338,8 +309,6 @@
       if (forward) { nextPage(); } else { prevPage(); }
     }
   }
-
-  // ------------------------------------------------------------------ boot
 
   function init() {
     var st = {};

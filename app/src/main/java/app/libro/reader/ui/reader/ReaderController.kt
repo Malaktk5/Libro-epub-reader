@@ -24,13 +24,8 @@ import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 
-/** Texts the in-page script needs (already translated). */
 data class ReaderLabels(val prev: String, val next: String, val end: String)
 
-/**
- * Owns the WebView that renders one book. Chapters are loaded from the EPUB zip through
- * shouldInterceptRequest on a private https://epub.local origin, so nothing ever touches the network.
- */
 class ReaderController(
     context: Context,
     private val book: EpubBook,
@@ -63,8 +58,6 @@ class ReaderController(
         configureWebView()
     }
 
-    // ------------------------------------------------------------------ setup
-
     @SuppressLint("SetJavaScriptEnabled")
     private fun configureWebView() {
         webView.apply {
@@ -78,7 +71,7 @@ class ReaderController(
                 allowContentAccess = false
                 blockNetworkLoads = true
                 setSupportZoom(false)
-                useWideViewPort = true      // honour the viewport meta we inject, so layout = screen width
+                useWideViewPort = true
                 loadWithOverviewMode = false
                 builtInZoomControls = false
                 textZoom = 100
@@ -90,7 +83,6 @@ class ReaderController(
         }
     }
 
-    /** Called whenever prefs, palette or labels change. Restyles the open chapter without reloading it. */
     fun updateStyle(prefs: UiPrefs, palette: ReaderPalette, labels: ReaderLabels) {
         val first = this.palette == null
         val modeChanged = !first && this.prefs.readerMode != prefs.readerMode
@@ -103,7 +95,7 @@ class ReaderController(
             loadChapter(chapter, pendingFraction, null)
         } else {
             if (modeChanged) {
-                // Position inside the chapter is kept by the script itself; nothing to reload.
+
             }
             webView.evaluateJavascript("window.__lib&&window.__lib.apply()", null)
         }
@@ -120,7 +112,6 @@ class ReaderController(
         o.put("hyph", prefs.hyphenate)
         o.put("force", prefs.forceStyle)
         o.put("font", FontFamilies.css(prefs.fontFamily))
-        o.put("css", prefs.customCss)
         o.put("lang", book.language)
         o.put("bookRtl", book.rtl)
         o.put("prevLabel", labels.prev)
@@ -136,8 +127,6 @@ class ReaderController(
         )
         return o.toString()
     }
-
-    // ------------------------------------------------------------------ navigation
 
     private fun urlFor(path: String): String =
         "https://$HOST/book/" + path.split('/').joinToString("/") { Uri.encode(it) }
@@ -162,7 +151,6 @@ class ReaderController(
         }
     }
 
-    /** Jumps to a book-level position, 0..1 (used by the progress slider). */
     fun seek(progress: Double) {
         val (idx, frac) = book.locate(progress)
         if (idx == loadedChapter) {
@@ -174,8 +162,6 @@ class ReaderController(
 
     fun next() = webView.evaluateJavascript("window.__lib&&window.__lib.next()", null)
     fun prev() = webView.evaluateJavascript("window.__lib&&window.__lib.prev()", null)
-
-    // ------------------------------------------------------------------ progress persistence
 
     private fun persist() {
         library.updateProgress(entry.id, chapter, lastFraction.coerceIn(0.0, 1.0), lastOverall)
@@ -196,8 +182,6 @@ class ReaderController(
         webView.destroy()
         book.close()
     }
-
-    // ------------------------------------------------------------------ JS bridge
 
     inner class Bridge {
         @JavascriptInterface
@@ -245,8 +229,6 @@ class ReaderController(
         }
     }
 
-    // ------------------------------------------------------------------ resource serving
-
     private inner class Client : WebViewClient() {
         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
             val uri = request.url
@@ -279,7 +261,7 @@ class ReaderController(
                 }
                 return true
             }
-            // Anything else (web links) is ignored: this is an offline reader.
+
             return true
         }
     }

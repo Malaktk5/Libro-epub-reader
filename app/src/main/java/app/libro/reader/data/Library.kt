@@ -27,10 +27,10 @@ data class BookEntry(
     val coverFile: String?,
     val addedAt: Long,
     val lastOpenedAt: Long,
-    /** Reading position: chapter index + fraction inside it (0..1). */
+
     val chapter: Int,
     val fraction: Double,
-    /** Whole-book progress, 0..1. */
+
     val progress: Double,
     val sizeBytes: Long,
 ) {
@@ -46,10 +46,6 @@ sealed interface ImportResult {
     data object Invalid : ImportResult
 }
 
-/**
- * The shelf. Every imported EPUB is copied into the app's private storage, so the book keeps
- * working even if the original file is moved or deleted. The index lives in library.json.
- */
 class LibraryRepository(private val context: Context) {
     private val booksDir = File(context.filesDir, "books").apply { mkdirs() }
     private val coversDir = File(context.filesDir, "covers").apply { mkdirs() }
@@ -149,8 +145,6 @@ class LibraryRepository(private val context: Context) {
         }
     }
 
-    // ------------------------------------------------------------------ covers
-
     private fun saveCover(book: EpubBook, id: String): String? {
         val bytes = book.readCover() ?: return null
         return try {
@@ -162,7 +156,7 @@ class LibraryRepository(private val context: Context) {
             val decoded = BitmapFactory.decodeByteArray(
                 bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample }
             ) ?: return null
-            // Flatten onto white so transparent PNG covers don't turn black as JPEG.
+
             val flat = Bitmap.createBitmap(decoded.width, decoded.height, Bitmap.Config.ARGB_8888)
             Canvas(flat).apply {
                 drawColor(Color.WHITE)
@@ -185,8 +179,6 @@ class LibraryRepository(private val context: Context) {
     } catch (e: Exception) {
         null
     }
-
-    // ------------------------------------------------------------------ persistence
 
     private fun load(): List<BookEntry> {
         if (!indexFile.exists()) return emptyList()

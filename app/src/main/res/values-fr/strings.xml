@@ -87,22 +87,4 @@
     <string name="about_text">Tout reste sur votre téléphone. Pas de compte, pas d\'internet, aucun suivi.</string>
     <string name="fonts_credit">Polices : Literata, Atkinson Hyperlegible, Amiri, Noto Naskh Arabic (licence SIL OFL).</string>
     <string name="preview_sample">Portez ce vieux whisky au juge blond qui fume.</string>
-    <string name="theme_amoled">Amoled</string>
-    <string name="theme_midnight">Minuit</string>
-    <string name="theme_nord">Nord</string>
-    <string name="theme_gruvbox">Gruvbox</string>
-    <string name="theme_forest">Forêt</string>
-    <string name="theme_solar">Solarized</string>
-    <string name="theme_solar_light">Solar clair</string>
-    <string name="theme_solar_dark">Solar sombre</string>
-    <string name="theme_rose">Rose</string>
-    <string name="theme_lavender">Lavande</string>
-    <string name="reading_defaults">Lecture</string>
-    <string name="custom_css">CSS personnalisé</string>
-    <string name="custom_css_on">Actif</string>
-    <string name="custom_css_help">Écrivez du CSS pour modifier l\'apparence des pages. Ajoutez !important (et le préfixe body) pour remplacer les règles du lecteur. Des variables de couleur comme --app-primary ou --page-bg modifient aussi l\'appli elle-même.</string>
-    <string name="custom_css_vars">Variables disponibles</string>
-    <string name="custom_css_apply">Appliquer</string>
-    <string name="custom_css_clear">Effacer</string>
-    <string name="custom_css_example">Insérer un exemple</string>
 </resources>

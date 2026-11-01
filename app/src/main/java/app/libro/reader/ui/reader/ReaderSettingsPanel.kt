@@ -21,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -47,7 +46,18 @@ import app.libro.reader.data.ReaderThemes
 import app.libro.reader.data.UiPrefs
 import app.libro.reader.ui.LocalThemeInfo
 import app.libro.reader.ui.Palettes
-import app.libro.reader.ui.themeNameRes
+
+@Composable
+private fun themeLabel(key: String) = stringResource(
+    when (key) {
+        ReaderThemes.LIGHT -> R.string.theme_light
+        ReaderThemes.SEPIA -> R.string.theme_sepia
+        ReaderThemes.GRAY -> R.string.theme_gray
+        ReaderThemes.DARK -> R.string.theme_dark
+        ReaderThemes.BLACK -> R.string.theme_black
+        else -> R.string.theme_auto
+    }
+)
 
 @Composable
 private fun fontLabel(key: String) = stringResource(
@@ -62,29 +72,20 @@ private fun fontLabel(key: String) = stringResource(
     }
 )
 
-/** Bottom-sheet version used inside the reader. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReaderSettingsPanel(prefs: Prefs, onEditCss: (() -> Unit)?) {
-    ReaderSettingsContent(
-        prefs,
-        onEditCss,
+fun ReaderSettingsPanel(prefs: Prefs) {
+    val p by prefs.state.collectAsState()
+    val info = LocalThemeInfo.current
+
+    Column(
         Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .navigationBarsPadding()
             .padding(horizontal = 24.dp)
-            .padding(bottom = 24.dp),
-    )
-}
-
-/** The settings controls themselves; the caller decides how they scroll. Also embedded in the app Settings screen. */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ReaderSettingsContent(prefs: Prefs, onEditCss: (() -> Unit)?, modifier: Modifier = Modifier) {
-    val p by prefs.state.collectAsState()
-    val info = LocalThemeInfo.current
-
-    Column(modifier) {
+            .padding(bottom = 24.dp)
+    ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.reader_settings), style = MaterialTheme.typography.titleLarge)
             TextButton(onClick = {
@@ -100,19 +101,18 @@ fun ReaderSettingsContent(prefs: Prefs, onEditCss: (() -> Unit)?, modifier: Modi
             }) { Text(stringResource(R.string.reset)) }
         }
 
-        // ---- page theme
         Label(stringResource(R.string.page_theme))
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             ReaderThemes.all.forEach { key ->
-                val pal = Palettes.base(key, info)
+                val pal = Palettes.forReader(key, info.dark, info.sepia)
                 val selected = p.readerTheme == key
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.width(72.dp).clickable { prefs.update { it.copy(readerTheme = key) } },
+                    modifier = Modifier.width(64.dp).clickable { prefs.update { it.copy(readerTheme = key) } },
                 ) {
                     Box(
                         Modifier
-                            .size(60.dp)
+                            .size(56.dp)
                             .clip(RoundedCornerShape(14.dp))
                             .background(pal.bg)
                             .border(
@@ -123,7 +123,7 @@ fun ReaderSettingsContent(prefs: Prefs, onEditCss: (() -> Unit)?, modifier: Modi
                         contentAlignment = Alignment.Center,
                     ) { Text("Aa", color = pal.fg, fontWeight = FontWeight.SemiBold) }
                     Text(
-                        stringResource(themeNameRes(key)),
+                        themeLabel(key),
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
                         modifier = Modifier.padding(top = 4.dp),
@@ -132,7 +132,6 @@ fun ReaderSettingsContent(prefs: Prefs, onEditCss: (() -> Unit)?, modifier: Modi
             }
         }
 
-        // ---- reading mode
         Label(stringResource(R.string.reading_mode))
         val modes = listOf(ReadModes.PAGED to R.string.mode_paged, ReadModes.SCROLL to R.string.mode_scroll)
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
@@ -145,7 +144,6 @@ fun ReaderSettingsContent(prefs: Prefs, onEditCss: (() -> Unit)?, modifier: Modi
             }
         }
 
-        // ---- font
         Label(stringResource(R.string.font))
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FontFamilies.all.forEach { key ->
@@ -157,7 +155,6 @@ fun ReaderSettingsContent(prefs: Prefs, onEditCss: (() -> Unit)?, modifier: Modi
             }
         }
 
-        // ---- size / spacing / margins
         Spacer(Modifier.height(8.dp))
         SliderRow(stringResource(R.string.text_size), "${p.fontScale}%", p.fontScale.toFloat(), 60f..260f, 38) {
             prefs.update { s -> s.copy(fontScale = (it / 5f).toInt() * 5) }
@@ -169,7 +166,6 @@ fun ReaderSettingsContent(prefs: Prefs, onEditCss: (() -> Unit)?, modifier: Modi
             prefs.update { s -> s.copy(margin = (it / 4f).toInt() * 4) }
         }
 
-        // ---- alignment
         Label(stringResource(R.string.alignment))
         val aligns = listOf(Aligns.DEFAULT to R.string.align_default, Aligns.START to R.string.align_start, Aligns.JUSTIFY to R.string.align_justify)
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
@@ -187,7 +183,6 @@ fun ReaderSettingsContent(prefs: Prefs, onEditCss: (() -> Unit)?, modifier: Modi
         SwitchRow(stringResource(R.string.force_style), p.forceStyle) { v -> prefs.update { it.copy(forceStyle = v) } }
         SwitchRow(stringResource(R.string.keep_awake), p.keepScreenOn) { v -> prefs.update { it.copy(keepScreenOn = v) } }
 
-        // ---- brightness
         Spacer(Modifier.height(4.dp))
         SwitchRow(stringResource(R.string.brightness_system), p.brightness < 0f) { v ->
             prefs.update { it.copy(brightness = if (v) -1f else 0.6f) }
@@ -195,16 +190,6 @@ fun ReaderSettingsContent(prefs: Prefs, onEditCss: (() -> Unit)?, modifier: Modi
         if (p.brightness >= 0f) {
             SliderRow(stringResource(R.string.brightness), "${(p.brightness * 100).toInt()}%", p.brightness, 0.02f..1f, 0) {
                 prefs.update { s -> s.copy(brightness = it) }
-            }
-        }
-
-        if (onEditCss != null) {
-            Spacer(Modifier.height(8.dp))
-            OutlinedButton(onClick = onEditCss, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    stringResource(R.string.custom_css) +
-                        if (p.customCss.isNotBlank()) "  ·  " + stringResource(R.string.custom_css_on) else ""
-                )
             }
         }
     }
