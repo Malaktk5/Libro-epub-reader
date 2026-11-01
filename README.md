@@ -2,11 +2,6 @@
 
 Kotlin + Jetpack Compose. No permissions, no internet, no analytics.
 
-## Build
-1. Open this folder in **Android Studio** (Ladybug or newer) and let Gradle sync.
-2. Run on a phone/emulator (Android 8.0+), or `Build > Build APK(s)`.
-   Command line: `./gradlew assembleDebug` → `app/build/outputs/apk/debug/`.
-
 ## What it does
 - First launch: choose **language** (English / Français / العربية / system) and **theme** (system / light / dark / sepia).
 - **Add books** picks EPUB files with the system file picker. Each is copied into app storage, so it still works if the original is moved.
